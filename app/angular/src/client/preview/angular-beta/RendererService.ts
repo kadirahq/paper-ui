@@ -84,25 +84,6 @@ export class RendererService {
       return;
     }
 
-    try {
-      // Clear global Angular component cache in order to be able to re-render the same component across multiple stories
-      //
-      // References:
-      // https://github.com/angular/angular-cli/blob/master/packages/angular_devkit/build_angular/src/webpack/plugins/hmr/hmr-accept.ts#L50
-      // https://github.com/angular/angular/blob/2ebe2bcb2fe19bf672316b05f15241fd7fd40803/packages/core/src/render3/jit/module.ts#L377-L384
-      // eslint-disable-next-line global-require
-      const resetCompiledComponents = require('@angular/core').ɵresetCompiledComponents;
-      resetCompiledComponents();
-    } catch (e) {
-      /**
-       * noop catch
-       * This means angular removed or modified ɵresetCompiledComponents
-       *
-       * Probably, they added a clearCache mechanism to platform.destroy() and
-       * we can simply remove this in case no errors are thrown during runtime
-       */
-    }
-
     // Complete last BehaviorSubject and set a new one for the current module
     if (this.storyProps$) {
       this.storyProps$.complete();
@@ -121,6 +102,26 @@ export class RendererService {
 
     this.initAngularRootElement();
     this.platform = platformBrowserDynamic();
+    this.platform.onDestroy(() => {
+      try {
+        // Clear global Angular component cache in order to be able to re-render the same component across multiple stories
+        //
+        // References:
+        // https://github.com/angular/angular-cli/blob/master/packages/angular_devkit/build_angular/src/webpack/plugins/hmr/hmr-accept.ts#L50
+        // https://github.com/angular/angular/blob/2ebe2bcb2fe19bf672316b05f15241fd7fd40803/packages/core/src/render3/jit/module.ts#L377-L384
+        // eslint-disable-next-line global-require
+        const resetCompiledComponents = require('@angular/core').ɵresetCompiledComponents;
+        resetCompiledComponents();
+      } catch (e) {
+        /**
+         * noop catch
+         * This means angular removed or modified ɵresetCompiledComponents
+         *
+         * Probably, they added a clearCache mechanism to platform.destroy() and
+         * we can simply remove this in case no errors are thrown during runtime
+         */
+      }
+    });
 
     return this.platform;
   }

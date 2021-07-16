@@ -12,6 +12,7 @@ module.exports = {
     '@storybook/addon-backgrounds',
     '@storybook/addon-a11y',
     '@storybook/addon-toolbars',
+    'storybook-addon-angular-ivy',
   ],
   core: {
     builder: 'webpack4',
